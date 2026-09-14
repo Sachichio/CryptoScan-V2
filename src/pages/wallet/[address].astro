@@ -1,0 +1,80 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import WalletHeader from '../../components/WalletHeader';
+import TokenList from '../../components/TokenList';
+import TransactionList from '../../components/TransactionList';
+import SearchBar from '../../components/SearchBar';
+import { getWalletInfo, isValidSolanaAddress } from '../../lib/solana';
+import type { WalletInfo } from '../../types/index';
+
+export const prerender = false; // Render secara dinamis di server saat halaman diakses
+
+const { address } = Astro.params;
+
+let walletData: WalletInfo | null = null;
+let errorMessage: string | null = null;
+
+if (!address || !isValidSolanaAddress(address)) {
+  errorMessage = 'Alamat wallet Solana tidak valid. Pastikan alamat merupakan Public Key Solana yang benar.';
+} else {
+  try {
+    walletData = await getWalletInfo(address);
+  } catch (err: any) {
+    console.error('Gagal me-render data wallet:', err);
+    errorMessage = err?.message || 'Terjadi kendala saat mengambil data wallet dari jaringan Solana.';
+  }
+}
+---
+
+<BaseLayout title={walletData ? `Wallet ${address ? address.slice(0, 6) : ''}... | CryptoScan` : 'Wallet Not Found | CryptoScan'}>
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    
+    {/* Navigation & Mini Search Bar */}
+    <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
+      <a
+        href="/"
+        class="inline-flex items-center gap-2 text-xs font-mono text-slate-400 hover:text-emerald-400 transition py-1"
+      >
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+        </svg>
+        <span>Kembali ke Pencarian</span>
+      </a>
+
+      <div class="sm:w-80">
+        <SearchBar client:load initialValue="" placeholder="Cari wallet lain..." />
+      </div>
+    </div>
+
+    {/* Error Handling State */}
+    {errorMessage ? (
+      <div class="bg-rose-950/20 border border-rose-800/40 rounded-2xl p-8 text-center max-w-xl mx-auto my-12">
+        <div class="w-12 h-12 rounded-full bg-rose-500/10 text-rose-400 mx-auto flex items-center justify-center mb-4">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+        </div>
+        <h2 class="text-lg font-bold text-slate-100 mb-2">Gagal Memuat Wallet</h2>
+        <p class="text-sm text-rose-300 font-mono mb-6">{errorMessage}</p>
+        <a
+          href="/"
+          class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-semibold transition"
+        >
+          Coba Alamat Lain
+        </a>
+      </div>
+    ) : walletData && (
+      <>
+        {/* 1. Wallet Header: Saldo SOL & USD */}
+        <WalletHeader client:load wallet={walletData} />
+
+        {/* 2. Token SPL Portfolio */}
+        <TokenList client:load address={address!} />
+
+        {/* 3. Recent Transactions */}
+        <TransactionList client:load transactions={walletData.recentTransactions} address={address!} />
+      </>
+    )}
+
+  </div>
+</BaseLayout>

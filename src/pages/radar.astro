@@ -1,0 +1,77 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import MemeRadarTable from '../components/MemeRadarTable';
+import type { MemeCoin } from '../types/index';
+
+// Ambil data trending meme coin secara SSR langsung dari internal API
+let initialCoins: MemeCoin[] = [];
+let fetchError: string | null = null;
+
+try {
+  const host = Astro.url.origin;
+  const res = await fetch(`${host}/api/radar/trending`);
+  if (res.ok) {
+    const data = await res.json();
+    initialCoins = data.coins || [];
+  } else {
+    fetchError = 'Gagal memuat data awal Meme Radar dari server.';
+  }
+} catch (err: any) {
+  // Jika fetch SSR gagal (misal saat pre-render atau bootstrap server lokal)
+  console.warn('SSR fetch /api/radar/trending error:', err?.message);
+}
+---
+
+<BaseLayout
+  title="🎯 Meme Radar — Solana Smart Money & Confidence Score"
+  description="Lacak koin meme Solana yang sedang trending, pantau Confidence Score (anti-rugpull), dan bongkar dompet whale pemenang."
+>
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
+    {/* Header Halaman */}
+    <div class="mb-8">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-mono text-xs mb-3">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span>Solana Meme Intelligence Engine</span>
+      </div>
+
+      <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-100 tracking-tight mb-2">
+        🎯 Meme Radar & Smart Money Tracker
+      </h1>
+      <p class="text-sm sm:text-base text-slate-400 max-w-3xl leading-relaxed">
+        Temukan token meme Solana yang sedang viral secara real-time. Setiap koin dinilai dengan 
+        <strong class="text-emerald-400 font-semibold"> Confidence Score (1-10)</strong> berbasis data on-chain 
+        (Mint Authority, Liquidity Burned, dan Konsentrasi Holder) untuk meminimalisir jebakan rugpull.
+      </p>
+    </div>
+
+    {/* Metric Bar Ringkas */}
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+      <div class="p-4 rounded-xl bg-slate-900/60 border border-slate-800/80">
+        <div class="text-xs text-slate-400 font-mono mb-1">Skor Aman (8-10)</div>
+        <div class="text-xl font-bold text-emerald-400">Anti-Rug Verifikasi</div>
+        <div class="text-[11px] text-slate-500 mt-1">Mint revoked & LP 80%+ burned</div>
+      </div>
+
+      <div class="p-4 rounded-xl bg-slate-900/60 border border-slate-800/80">
+        <div class="text-xs text-slate-400 font-mono mb-1">Whale Intelligence</div>
+        <div class="text-xl font-bold text-teal-300">Top Traders Tracker</div>
+        <div class="text-[11px] text-slate-500 mt-1">Lacak dompet yang cuan dari awal</div>
+      </div>
+
+      <div class="p-4 rounded-xl bg-slate-900/60 border border-slate-800/80">
+        <div class="text-xs text-slate-400 font-mono mb-1">100% Free Ecosystem</div>
+        <div class="text-xl font-bold text-cyan-400">On-Chain Analytics</div>
+        <div class="text-[11px] text-slate-500 mt-1">Didukung DexScreener & RugCheck</div>
+      </div>
+    </div>
+
+    {/* Komponen Tabel Interaktif React */}
+    {fetchError ? (
+      <div class="p-6 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-300 text-sm font-mono text-center">
+        {fetchError}
+      </div>
+    ) : (
+      <MemeRadarTable client:load initialCoins={initialCoins} />
+    )}
+  </div>
+</BaseLayout>

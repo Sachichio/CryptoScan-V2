@@ -1,0 +1,114 @@
+---
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const {
+  title = 'CryptoScan — Solana Wallet Profiler & Analytics',
+  description = 'Eksplorasi saldo, token SPL, dan transaksi dompet Solana secara real-time dan gratis.',
+} = Astro.props;
+
+const currentPath = Astro.url.pathname;
+---
+
+<!doctype html>
+<html lang="id" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <style>
+      @import "tailwindcss";
+    </style>
+  </head>
+  <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans selection:bg-emerald-500 selection:text-slate-950 antialiased">
+    {/* Global Header / Navbar */}
+    <header class="border-b border-slate-800/80 bg-slate-950/80 backdrop-blur-md sticky top-0 z-50">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        <div class="flex items-center gap-6">
+          <a href="/" class="flex items-center gap-2.5 group">
+            <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 p-0.5 shadow-md shadow-emerald-500/20 group-hover:scale-105 transition-transform">
+              <div class="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center">
+                <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+              </div>
+            </div>
+            <div>
+              <span class="font-bold text-lg tracking-tight bg-gradient-to-r from-slate-100 to-slate-300 bg-clip-text text-transparent">
+                Crypto<span class="text-emerald-400">Scan</span>
+              </span>
+              <span class="text-[10px] font-mono ml-1.5 px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700/50">
+                Solana
+              </span>
+            </div>
+          </a>
+
+          {/* Navigasi Menu Header */}
+          <nav class="hidden md:flex items-center gap-1.5 text-xs font-mono">
+            <a
+              href="/"
+              class={`px-3 py-1.5 rounded-lg transition ${
+                currentPath === '/'
+                  ? 'bg-slate-800 text-emerald-400 font-semibold border border-slate-700/60'
+                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
+              }`}
+            >
+              🔍 Profiler Wallet
+            </a>
+            <a
+              href="/radar"
+              class={`px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 ${
+                currentPath.startsWith('/radar')
+                  ? 'bg-emerald-500/10 text-emerald-400 font-semibold border border-emerald-500/30'
+                  : 'text-slate-400 hover:text-emerald-400 hover:bg-slate-900'
+              }`}
+            >
+              <span>🎯 Meme Radar</span>
+              <span class="px-1.5 py-0.2 rounded-full bg-emerald-500/20 text-[9px] text-emerald-400 font-bold animate-pulse">
+                NEW
+              </span>
+            </a>
+          </nav>
+        </div>
+
+        <div class="flex items-center gap-3 text-xs font-mono text-slate-400">
+          {/* Mobile Nav Link */}
+          <a
+            href="/radar"
+            class="md:hidden px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-[11px]"
+          >
+            🎯 Radar
+          </a>
+
+          <span class="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            Helius RPC Live
+          </span>
+          <span class="py-1 px-2 rounded bg-slate-900 text-slate-500 border border-slate-800">
+            v2.0.0
+          </span>
+        </div>
+      </div>
+    </header>
+
+    {/* Main Content View */}
+    <main class="flex-1">
+      <slot />
+    </main>
+
+    {/* Global Footer */}
+    <footer class="border-t border-slate-800/60 bg-slate-950 py-8 text-center text-xs text-slate-500 font-mono">
+      <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <p>CryptoScan — Dibuat untuk eksplorasi, analisa dompet, dan pelacak meme coin Solana.</p>
+        <p class="flex items-center gap-1 text-slate-400">
+          Powered by <span class="text-slate-200 font-semibold">Bun</span> + <span class="text-slate-200 font-semibold">Astro</span> + <span class="text-emerald-400 font-semibold">DexScreener & RugCheck</span>
+        </p>
+      </div>
+    </footer>
+  </body>
+</html>

@@ -1,90 +1,116 @@
 /**
  * src/types/index.ts
- * Definisi tipe data TypeScript untuk seluruh data dompet dan transaksi.
- * Ini membantu editor dan compiler memastikan struktur data konsisten.
+ * Definisi tipe data TypeScript untuk multi-chain CryptoScan (Solana, Ethereum, BSC).
  */
 
-// Detail satu transaksi di blockchain Solana
+// Identitas jaringan yang didukung
+export type ChainId = 'solana' | 'ethereum' | 'bsc' | 'base' | 'arbitrum';
+
+// Konfigurasi tiap jaringan
+export interface ChainConfig {
+  id: ChainId;
+  name: string;             // "Solana", "Ethereum", "BNB Smart Chain"
+  shortName: string;        // "SOL", "ETH", "BSC"
+  nativeSymbol: string;     // "SOL", "ETH", "BNB"
+  color: string;            // Warna brand untuk styling
+  logoChar: string;         // Karakter/simbol logo: "◎", "⟠", "⬡"
+  explorerUrl: string;      // Base URL block explorer
+  rpcUrl: string;           // URL RPC
+  goplusChainId?: string;   // Chain ID untuk GoPlus API ("1" ETH, "56" BSC)
+  dexscreenerChain: string; // ID chain di DexScreener ("solana", "ethereum", "bsc")
+}
+
+// Detail satu transaksi blockchain
 export interface Transaction {
-  signature: string;        // ID unik transaksi (hash signature)
-  blockTime: number | null; // Waktu blok dalam timestamp unix detik
-  type: string;             // Jenis transaksi (misal: TRANSFER, SWAP, atau UNKNOWN)
-  fee: number;              // Biaya transaksi dalam SOL
-  status: 'success' | 'failed'; // Status keberhasilan transaksi
-  slot?: number;            // Nomor slot blockchain
+  signature: string;        // ID / Hash transaksi
+  blockTime: number | null; // Timestamp detik
+  type: string;             // TRANSFER, SWAP, atau INTERACTION
+  fee: number;              // Biaya dalam native coin (SOL/ETH/BNB)
+  status: 'success' | 'failed';
+  slot?: number;
 }
 
-// Token SPL (token di ekosistem Solana, termasuk USDC, BONK, meme coin, dll.)
+// Token (SPL untuk Solana, ERC-20 untuk ETH, BEP-20 untuk BSC)
 export interface Token {
-  mint: string;             // Alamat kontrak / mint token
-  name: string;             // Nama token (contoh: USD Coin, Bonk)
-  symbol: string;           // Simbol ticker (contoh: USDC, BONK)
-  logoURI?: string;         // Link icon gambar token jika ada
-  balance: number;          // Jumlah saldo token yang dimiliki user
-  decimals: number;         // Desimal token
-  priceUSD: number;         // Harga token per koin dalam USD
-  valueUSD: number;         // Nilai total token dalam USD (balance * priceUSD)
+  mint: string;             // Contract / Mint address
+  name: string;
+  symbol: string;
+  logoURI?: string;
+  balance: number;
+  decimals: number;
+  priceUSD: number;
+  valueUSD: number;
+  chain?: ChainId;
 }
 
-// Struktur respon lengkap saat mengambil data portofolio token
+// Token ERC-20 / BEP-20
+export interface EVMToken extends Token {
+  contractAddress?: string;
+}
+
+// Portofolio token
 export interface WalletTokens {
-  address: string;          // Alamat wallet pemilik
-  tokens: Token[];          // Daftar koin yang dimiliki
-  totalValueUSD: number;    // Total valuasi portofolio token dalam USD
+  address: string;
+  chain?: ChainId;
+  tokens: Token[];
+  totalValueUSD: number;
 }
 
-// Struktur respon lengkap saat mengambil profil informasi wallet utama
+// Profil lengkap wallet
 export interface WalletInfo {
-  address: string;                  // Alamat wallet Solana
-  solBalance: number;               // Saldo koin asli SOL
-  solBalanceUSD: number;            // Nilai saldo SOL dalam USD
-  solPriceUSD: number;              // Harga 1 SOL saat ini dalam USD
-  transactionCount: number;         // Perkiraan jumlah transaksi
-  recentTransactions: Transaction[];// Riwayat transaksi terbaru
-  tokensCount?: number;             // Jumlah jenis token yang dimiliki
+  address: string;
+  chain: ChainId;                   // Jaringan: solana | ethereum | bsc
+  nativeSymbol: string;             // "SOL" | "ETH" | "BNB"
+  solBalance: number;               // Saldo native koin (SOL/ETH/BNB)
+  solBalanceUSD: number;            // Nilai saldo native dalam USD
+  solPriceUSD: number;              // Harga 1 native koin dalam USD
+  transactionCount: number;         // Jumlah transaksi
+  recentTransactions: Transaction[];// Riwayat transaksi
+  tokensCount?: number;
 }
 
-// Format respon standar API jika terjadi error
+// Respon standar error API
 export interface ApiError {
   error: string;
   message?: string;
 }
 
-// ==========================================
-// TIPE DATA BARU UNTUK MEME RADAR (V2)
-// ==========================================
-
-// Data koin meme yang tampil di Meme Radar
+// Data koin meme untuk Meme Radar
 export interface MemeCoin {
-  mint: string;            // Contract address / mint address
-  name: string;            // Nama koin, contoh: "BONK"
-  symbol: string;          // Simbol, contoh: "BONK"
-  logoURI?: string;        // URL gambar logo
-  priceUSD: number;        // Harga saat ini dalam USD
-  priceChange24h: number;  // % perubahan harga 24 jam (bisa negatif)
-  volume24hUSD: number;    // Volume trading 24 jam dalam USD
-  liquidityUSD: number;    // Total likuiditas dalam USD
-  marketCapUSD: number;    // Market cap (FDV) dalam USD
-  confidenceScore: number; // Skor kepercayaan 1-10 (dihitung oleh kita)
-  confidenceLabel: 'safe' | 'caution' | 'danger'; // Label untuk warna badge
-  pairAddress?: string;    // Alamat liquidity pool di DexScreener (opsional)
+  mint: string;
+  name: string;
+  symbol: string;
+  chain: ChainId;          // Jaringan asal koin meme
+  logoURI?: string;
+  priceUSD: number;
+  priceChange24h: number;
+  volume24hUSD: number;
+  liquidityUSD: number;
+  marketCapUSD: number;
+  confidenceScore: number; // 1-10
+  confidenceLabel: 'safe' | 'caution' | 'danger';
+  pairAddress?: string;
 }
 
-// Data satu wallet yang masuk kategori "Top Trader" untuk sebuah koin
+// Top Whale Trader
 export interface TopTrader {
-  wallet: string;           // Alamat wallet publik
-  realizedPnlUSD: number;   // Keuntungan yang sudah direalisasi (dalam USD)
-  unrealizedPnlUSD: number; // Keuntungan yang belum direalisasi (dalam USD)
-  totalBoughtUSD: number;   // Total nilai pembelian
-  totalSoldUSD: number;     // Total nilai penjualan
+  wallet: string;
+  realizedPnlUSD: number;
+  unrealizedPnlUSD: number;
+  totalBoughtUSD: number;
+  totalSoldUSD: number;
 }
 
-// Data keamanan token dari RugCheck
+// Data Keamanan Token (Solana: RugCheck, EVM: GoPlus)
 export interface TokenSecurity {
   mint: string;
+  chain: ChainId;
   mintAuthorityRevoked: boolean;
   freezeAuthorityRevoked: boolean;
+  isHoneypot?: boolean;
+  buyTax?: number;
+  sellTax?: number;
   lpBurnedPercent: number;
   top10HolderPercent: number;
-  rugcheckScore: number; // Skor asli dari RugCheck (0 = perfect, makin tinggi makin berbahaya)
+  score: number;
 }

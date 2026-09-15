@@ -1,27 +1,11 @@
-/**
- * src/lib/solana.ts
- * Integrasi langsung ke Blockchain Solana via Helius RPC.
- * Mengambil balance SOL asli, akun token SPL, dan riwayat transaksi.
- */
+import { Connection, PublicKey, LAMPORTS_PER_SOL } from '@solana/web3.js';
+import type { WalletInfo, Transaction, Token, WalletTokens } from '../../types/index';
+import { getSolPriceUSD, getTokenPricesUSD } from '../price';
+import { CHAINS_CONFIG } from './index';
 
-import {
-  Connection,
-  PublicKey,
-  LAMPORTS_PER_SOL,
-} from '@solana/web3.js';
-import type { WalletInfo, Transaction, Token, WalletTokens } from '../types/index';
-import { getSolPriceUSD, getTokenPricesUSD } from './price';
-
-// Ambil URL RPC dari environment variable atau gunakan endpoint Helius default
-const HELIUS_KEY = process.env.HELIUS_API_KEY || 'f7305b2a-724a-4eed-aac2-e724ef8eb721';
-const RPC_ENDPOINT = process.env.HELIUS_RPC_URL || `https://mainnet.helius-rpc.com/?api-key=${HELIUS_KEY}`;
-
-// Inisialisasi koneksi Solana
+const RPC_ENDPOINT = CHAINS_CONFIG.solana.rpcUrl;
 const connection = new Connection(RPC_ENDPOINT, 'confirmed');
 
-/**
- * Validasi apakah sebuah string adalah Public Key Solana yang valid (Base58 32-44 karakter)
- */
 export function isValidSolanaAddress(address: string): boolean {
   try {
     const pubkey = new PublicKey(address);
@@ -31,17 +15,12 @@ export function isValidSolanaAddress(address: string): boolean {
   }
 }
 
-/**
- * Mengambil informasi ringkas saldo SOL dan riwayat transaksi terbaru dari wallet
- */
-export async function getWalletInfo(address: string): Promise<WalletInfo> {
+export async function getSolanaWalletInfo(address: string): Promise<WalletInfo> {
   if (!isValidSolanaAddress(address)) {
     throw new Error('Alamat wallet Solana tidak valid');
   }
 
   const pubkey = new PublicKey(address);
-
-  // 1. Ambil saldo SOL asli dan harga SOL secara paralel
   const [lamports, solPriceUSD, signatures] = await Promise.all([
     connection.getBalance(pubkey),
     getSolPriceUSD(),
@@ -51,18 +30,19 @@ export async function getWalletInfo(address: string): Promise<WalletInfo> {
   const solBalance = lamports / LAMPORTS_PER_SOL;
   const solBalanceUSD = solBalance * solPriceUSD;
 
-  // 2. Format riwayat transaksi ringkas
   const recentTransactions: Transaction[] = signatures.map((sig) => ({
     signature: sig.signature,
     blockTime: sig.blockTime ?? null,
     type: sig.err ? 'FAILED_TX' : 'TRANSFER/INTERACTION',
-    fee: 0.000005, // Standar base fee di Solana adalah 5000 lamports
+    fee: 0.000005,
     status: sig.err ? 'failed' : 'success',
     slot: sig.slot,
   }));
 
   return {
     address,
+    chain: 'solana',
+    nativeSymbol: 'SOL',
     solBalance,
     solBalanceUSD,
     solPriceUSD,
@@ -71,27 +51,26 @@ export async function getWalletInfo(address: string): Promise<WalletInfo> {
   };
 }
 
-/**
- * Mengambil semua token SPL yang dimiliki oleh wallet
- */
-export async function getWalletTokens(address: string): Promise<WalletTokens> {
+export async function getSolanaWalletTokens(address: string): Promise<WalletTokens> {
   if (!isValidSolanaAddress(address)) {
     throw new Error('Alamat wallet Solana tidak valid');
   }
 
   const pubkey = new PublicKey(address);
-
-  // Mengambil token accounts yang dimiliki wallet (SPL Token Program ID)
   const TOKEN_PROGRAM_ID = new PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA');
-  
+
   let parsedTokenAccounts;
   try {
-    parsedTokenAccounts = await connection.getParsedTokenAccountsByOwner(pubkey, {
+    const fetchTokensPromise = connection.getParsedTokenAccountsByOwner(pubkey, {
       programId: TOKEN_PROGRAM_ID,
     });
+    const timeoutPromise = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('Timeout Solana RPC getParsedTokenAccountsByOwner (5s)')), 5000)
+    );
+    parsedTokenAccounts = await Promise.race([fetchTokensPromise, timeoutPromise]);
   } catch (e) {
-    console.error('Gagal mengambil akun token SPL:', e);
-    return { address, tokens: [], totalValueUSD: 0 };
+    console.warn('Gagal mengambil akun token SPL Solana / Timeout:', e);
+    return { address, chain: 'solana', tokens: [], totalValueUSD: 0 };
   }
 
   const tokenList: Token[] = [];
@@ -105,7 +84,6 @@ export async function getWalletTokens(address: string): Promise<WalletTokens> {
     const mint = tokenInfo.mint as string;
     const decimals = Number(tokenInfo.tokenAmount?.decimals || 0);
 
-    // Filter token dengan saldo 0 agar tampilan tetap bersih
     if (amount > 0) {
       mintAddresses.push(mint);
       tokenList.push({
@@ -116,11 +94,11 @@ export async function getWalletTokens(address: string): Promise<WalletTokens> {
         decimals,
         priceUSD: 0,
         valueUSD: 0,
+        chain: 'solana',
       });
     }
   }
 
-  // Ambil harga token secara bersamaan via Jupiter API jika ada token ditemukan
   if (mintAddresses.length > 0) {
     const prices = await getTokenPricesUSD(mintAddresses);
     for (const token of tokenList) {
@@ -130,6 +108,8 @@ export async function getWalletTokens(address: string): Promise<WalletTokens> {
       }
     }
 
+    // Perkaya metadata nama dan simbol token menggunakan DexScreener multi-token API
+    // Ambil maksimal 30 token teratas
     const topMints = mintAddresses.slice(0, 30);
     try {
       const dexRes = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${topMints.join(',')}`, {
@@ -172,13 +152,12 @@ export async function getWalletTokens(address: string): Promise<WalletTokens> {
     }
   }
 
-  // Urutkan token dari nilai USD tertinggi
   tokenList.sort((a, b) => b.valueUSD - a.valueUSD);
-
   const totalValueUSD = tokenList.reduce((acc, t) => acc + (t.valueUSD || 0), 0);
 
   return {
     address,
+    chain: 'solana',
     tokens: tokenList,
     totalValueUSD,
   };

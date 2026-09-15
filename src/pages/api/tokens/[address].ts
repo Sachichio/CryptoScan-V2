@@ -1,46 +1,65 @@
-﻿/**
- * src/pages/api/tokens/[address].ts
- * Backend endpoint untuk mengambil daftar kepemilikan token SPL & valuasi nilainya.
- * Endpoint: GET /api/tokens/:address
- */
 import type { APIRoute } from 'astro';
-import { getWalletTokens, isValidSolanaAddress } from '../../../lib/solana';
+import { detectChain } from '../../../lib/chains/index';
+import { getSolanaWalletTokens } from '../../../lib/chains/solana';
+import { getEthereumWalletTokens } from '../../../lib/chains/ethereum';
+import { getBSCWalletTokens } from '../../../lib/chains/bsc';
+import { getBaseWalletTokens } from '../../../lib/chains/base';
+import { getArbitrumWalletTokens } from '../../../lib/chains/arbitrum';
 
-export const prerender = false; // SSR on-demand
+/**
+ * GET /api/tokens/[address]
+ * Mengembalikan portofolio token (SPL untuk Solana, ERC-20 untuk Ethereum/Base/Arbitrum, BEP-20 untuk BSC)
+ */
+export const GET: APIRoute = async ({ params, url }) => {
+  const { address } = params;
+  const forcedChain = url.searchParams.get('chain');
 
-export const GET: APIRoute = async ({ params }) => {
-  const address = params.address;
-
-  if (!address || !isValidSolanaAddress(address)) {
+  if (!address || typeof address !== 'string') {
     return new Response(
-      JSON.stringify({ error: 'Alamat wallet Solana tidak valid atau kosong' }),
-      {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' },
-      }
+      JSON.stringify({ error: 'Alamat wallet tidak boleh kosong' }),
+      { status: 400, headers: { 'Content-Type': 'application/json' } }
+    );
+  }
+
+  const detected = detectChain(address);
+  const targetChain = forcedChain || detected;
+
+  if (targetChain === 'unknown') {
+    return new Response(
+      JSON.stringify({ error: 'Alamat tidak dikenali' }),
+      { status: 400, headers: { 'Content-Type': 'application/json' } }
     );
   }
 
   try {
-    const data = await getWalletTokens(address);
-    return new Response(JSON.stringify(data), {
+    let tokensData;
+
+    if (targetChain === 'ethereum') {
+      tokensData = await getEthereumWalletTokens(address);
+    } else if (targetChain === 'bsc') {
+      tokensData = await getBSCWalletTokens(address);
+    } else if (targetChain === 'base') {
+      tokensData = await getBaseWalletTokens(address);
+    } else if (targetChain === 'arbitrum') {
+      tokensData = await getArbitrumWalletTokens(address);
+    } else {
+      tokensData = await getSolanaWalletTokens(address);
+    }
+
+    return new Response(JSON.stringify(tokensData), {
       status: 200,
       headers: {
         'Content-Type': 'application/json',
-        'Cache-Control': 'public, max-age=30', // Cache 30 detik
+        'Cache-Control': 'public, max-age=30',
       },
     });
-  } catch (error: any) {
-    console.error('Error pada GET /api/tokens/[address]:', error);
+  } catch (err: any) {
+    console.error(`Error pada /api/tokens/${address}:`, err);
     return new Response(
       JSON.stringify({
-        error: 'Gagal mengambil data token',
-        message: error?.message || 'Terjadi kesalahan saat memproses token SPL',
+        error: err?.message || 'Gagal memproses token list',
       }),
-      {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' },
-      }
+      { status: 500, headers: { 'Content-Type': 'application/json' } }
     );
   }
 };

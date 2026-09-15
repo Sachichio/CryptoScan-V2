@@ -5,8 +5,8 @@ interface Props {
 }
 
 const {
-  title = 'CryptoScan — Solana Wallet Profiler & Analytics',
-  description = 'Eksplorasi saldo, token SPL, dan transaksi dompet Solana secara real-time dan gratis.',
+  title = 'CryptoScan — Multi-Chain Wallet Profiler & Analytics',
+  description = 'Eksplorasi saldo, token, dan transaksi dompet di Solana, Ethereum, BSC, Base, dan Arbitrum secara real-time dan gratis.',
 } = Astro.props;
 
 const currentPath = Astro.url.pathname;
@@ -42,8 +42,8 @@ const currentPath = Astro.url.pathname;
               <span class="font-bold text-lg tracking-tight bg-gradient-to-r from-slate-100 to-slate-300 bg-clip-text text-transparent">
                 Crypto<span class="text-emerald-400">Scan</span>
               </span>
-              <span class="text-[10px] font-mono ml-1.5 px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700/50">
-                Solana
+              <span class="text-[10px] font-mono ml-1.5 px-1.5 py-0.5 rounded bg-slate-800 text-emerald-400 border border-emerald-500/30 font-semibold">
+                Multi-Chain
               </span>
             </div>
           </a>
@@ -104,9 +104,9 @@ const currentPath = Astro.url.pathname;
     {/* Global Footer */}
     <footer class="border-t border-slate-800/60 bg-slate-950 py-8 text-center text-xs text-slate-500 font-mono">
       <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-        <p>CryptoScan — Dibuat untuk eksplorasi, analisa dompet, dan pelacak meme coin Solana.</p>
-        <p class="flex items-center gap-1 text-slate-400">
-          Powered by <span class="text-slate-200 font-semibold">Bun</span> + <span class="text-slate-200 font-semibold">Astro</span> + <span class="text-emerald-400 font-semibold">DexScreener & RugCheck</span>
+        <p>CryptoScan — Dibuat untuk eksplorasi, analisa dompet, dan pelacak meme coin Multi-Chain.</p>
+        <p class="flex items-center gap-1 text-slate-400 font-semibold text-slate-300">
+          © 2026 CryptoScan
         </p>
       </div>
     </footer>

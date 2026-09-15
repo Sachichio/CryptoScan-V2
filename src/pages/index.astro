@@ -1,59 +1,75 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import SearchBar from '../components/SearchBar';
+import { shortenAddress } from '../lib/utils';
 
-// Daftar wallet publik populer untuk demo uji coba cepat
+// Daftar wallet demo populer mewakili 3 ekosistem: Solana, Ethereum, dan BNB Chain
 const demoWallets = [
   {
     name: 'Solana Foundation',
     address: 'vines1vzrYbzLMRdu58ou5XTby4qAqVRLmqo36NKPTg',
-    tag: 'Foundation'
+    chain: 'Solana ◎',
+    color: 'border-emerald-500/40 text-emerald-400'
   },
   {
-    name: 'Raydium Authority',
-    address: '5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pcon44',
-    tag: 'DEX Liquidity'
+    name: 'Vitalik Buterin',
+    address: '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045',
+    chain: 'Ethereum ⟠',
+    color: 'border-cyan-500/40 text-cyan-400'
   },
   {
-    name: 'Pump.fun Deployer',
-    address: '6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P',
-    tag: 'Meme Protocol'
+    name: 'Binance Hot Wallet',
+    address: '0x8894e0a0c962cb723c1976a4421c95949be2d4e3',
+    chain: 'BNB Chain ⬡',
+    color: 'border-amber-500/40 text-amber-400'
+  },
+  {
+    name: 'Base Treasury',
+    address: '0x3304E22DDaa22bCdC5fCa2269b418046aE7b566A',
+    chain: 'Base 🔷',
+    color: 'border-indigo-500/40 text-indigo-400'
+  },
+  {
+    name: 'Arbitrum Foundation',
+    address: '0x171a232f2380224ec37da24b3a0c0e3041212571',
+    chain: 'Arbitrum 🔵',
+    color: 'border-blue-500/40 text-blue-400'
   }
 ];
 ---
 
-<BaseLayout title="CryptoScan — Solana Wallet Profiler">
+<BaseLayout title="CryptoScan — Multi-Chain Wallet Profiler & Radar">
   <div class="relative overflow-hidden py-16 sm:py-24">
     {/* Ambient Glows */}
     <div class="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
-    <div class="absolute top-1/3 left-1/3 w-64 h-64 bg-teal-500/10 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute top-1/3 left-1/3 w-64 h-64 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"></div>
 
     <div class="max-w-4xl mx-auto px-4 text-center relative z-10">
       {/* Banner Menuju Fitur Baru Meme Radar */}
       <div class="mb-6 flex justify-center">
         <a
           href="/radar"
-          class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-xs text-emerald-300 font-mono transition group shadow-sm"
+          class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-900 hover:bg-slate-850 border border-slate-700/80 text-xs text-slate-300 font-mono transition group shadow-sm"
         >
           <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-          <span>Fitur Baru: <strong>🎯 Meme Radar & Confidence Score</strong></span>
-          <span class="group-hover:translate-x-0.5 transition-transform">→</span>
+          <span>Multi-Chain V3.1: <strong>SOL ◎ | ETH ⟠ | BNB ⬡ | BASE 🔷 | ARB 🔵</strong></span>
+          <span class="group-hover:translate-x-0.5 transition-transform text-emerald-400">→</span>
         </a>
       </div>
 
       {/* Hero Headline */}
       <h1 class="text-4xl sm:text-6xl font-extrabold tracking-tight text-slate-100 mb-6">
-        Analisis Wallet Solana <br />
+        Multi-Chain Wallet Profiler <br />
         <span class="bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 bg-clip-text text-transparent">
-          Secara Cepat & 100% Gratis
+          Solana, Ethereum, BNB, Base & Arbitrum
         </span>
       </h1>
 
       <p class="text-base sm:text-lg text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed">
-        Pantau portofolio koin, saldo real-time SOL, token SPL, meme coin, dan jejak transaksi langsung dari data on-chain Solana via Helius RPC.
+        Satu platform untuk menganalisis saldo, token portofolio, dan transaksi on-chain secara otomatis tanpa perlu memilih jaringan secara manual.
       </p>
 
-      {/* Interactive React Search Bar */}
+      {/* Interactive React Search Bar with Live Chain Detection */}
       <div class="mb-12">
         <SearchBar client:load />
       </div>
@@ -61,27 +77,34 @@ const demoWallets = [
       {/* Quick Demo Wallets */}
       <div class="mt-8 pt-8 border-t border-slate-800/60 max-w-2xl mx-auto text-left">
         <div class="text-xs font-mono text-slate-400 uppercase tracking-wider mb-3 text-center sm:text-left">
-          Atau coba klik contoh wallet publik ini:
+          Contoh dompet publik di 5 jaringan:
         </div>
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          {demoWallets.map((wallet) => (
-            <a
-              href={`/wallet/${wallet.address}`}
-              class="p-3 bg-slate-900/60 hover:bg-slate-800/80 border border-slate-800 hover:border-emerald-500/50 rounded-xl transition group block"
-            >
-              <div class="flex items-center justify-between mb-1">
-                <span class="text-xs font-semibold text-slate-200 group-hover:text-emerald-400 transition">
-                  {wallet.name}
-                </span>
-                <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-800 text-slate-400">
-                  {wallet.tag}
-                </span>
-              </div>
-              <p class="text-[11px] font-mono text-slate-500 truncate">
-                {wallet.address}
-              </p>
-            </a>
-          ))}
+        <div class="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-5 gap-3">
+          {demoWallets.map((wallet) => {
+            const chainParam = 
+              wallet.chain.includes('BNB') ? '?chain=bsc' :
+              wallet.chain.includes('Base') ? '?chain=base' :
+              wallet.chain.includes('Arbitrum') ? '?chain=arbitrum' : '';
+
+            return (
+              <a
+                href={`/wallet/${wallet.address}${chainParam}`}
+                class="p-3 bg-slate-900/60 hover:bg-slate-800/80 border border-slate-800 hover:border-slate-700 rounded-xl transition group block"
+              >
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-xs font-semibold text-slate-300 group-hover:text-emerald-400 transition">
+                    {wallet.name}
+                  </span>
+                  <span class={`text-[10px] font-mono px-1.5 py-0.5 rounded border ${wallet.color} bg-slate-950/60`}>
+                    {wallet.chain}
+                  </span>
+                </div>
+                <div class="text-[11px] font-mono text-slate-400 truncate">
+                  {shortenAddress(wallet.address, 4)}
+                </div>
+              </a>
+            );
+          })}
         </div>
       </div>
     </div>

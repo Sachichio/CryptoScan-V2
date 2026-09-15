@@ -6,6 +6,7 @@ interface TopTradersModalProps {
   mint: string;
   tokenName: string;
   tokenSymbol: string;
+  chain?: string;
   isOpen: boolean;
   onClose: () => void;
 }
@@ -18,6 +19,7 @@ export default function TopTradersModal({
   mint,
   tokenName,
   tokenSymbol,
+  chain = 'solana',
   isOpen,
   onClose,
 }: TopTradersModalProps) {
@@ -32,7 +34,7 @@ export default function TopTradersModal({
     setLoading(true);
     setError(null);
 
-    fetch(`/api/radar/traders/${mint}`)
+    fetch(`/api/radar/traders/${mint}?chain=${chain || 'solana'}`)
       .then((res) => {
         if (!res.ok) throw new Error('Gagal mengambil data top traders');
         return res.json();
@@ -102,8 +104,19 @@ export default function TopTradersModal({
           )}
 
           {!loading && !error && traders.length === 0 && (
-            <div className="py-8 text-center text-slate-500 text-xs font-mono">
-              Data top trader belum tercatat untuk token ini.
+            <div className="py-10 px-4 text-center flex flex-col items-center justify-center">
+              <div className="w-12 h-12 rounded-full bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 mb-3 text-xl">
+                ⚠️
+              </div>
+              <h4 className="text-sm font-bold text-slate-200 mb-1">
+                Data Whale Belum Tersedia di On-Chain
+              </h4>
+              <p className="text-xs text-slate-400 max-w-sm mb-4 leading-relaxed">
+                Sistem tidak dapat menarik daftar pemegang terbesar untuk token ini secara langsung dari blockchain. Kemungkinan likuiditas token masih sangat baru atau indeks data pemegang sedang diperbarui.
+              </p>
+              <div className="p-3 bg-slate-800/60 rounded-xl border border-slate-700/50 text-[11px] text-slate-300 font-mono">
+                Silakan pantau pergerakan transaksi token ini secara langsung di DexScreener atau Block Explorer.
+              </div>
             </div>
           )}
 
@@ -136,15 +149,21 @@ export default function TopTradersModal({
                         {formatUSD(t.totalBoughtUSD)}
                       </td>
                       <td className="py-3.5 pr-2 text-right">
-                        <a
-                          href={`/wallet/${t.wallet}`}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 transition text-[11px] font-medium"
-                        >
-                          <span>Stalk Wallet</span>
-                          <span>→</span>
-                        </a>
+                        {(() => {
+                          const isEVM = chain && chain !== 'solana';
+                          const stalkUrl = `/wallet/${t.wallet}${isEVM ? `?chain=${chain}` : ''}`;
+                          return (
+                            <a
+                              href={stalkUrl}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 transition text-[11px] font-medium"
+                            >
+                              <span>Stalk Wallet</span>
+                              <span>→</span>
+                            </a>
+                          );
+                        })()}
                       </td>
                     </tr>
                   ))}

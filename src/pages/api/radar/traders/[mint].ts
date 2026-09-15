@@ -5,8 +5,10 @@ import { getTopTraders } from '../../../../lib/dexscreener';
  * GET /api/radar/traders/[mint]
  * Mengambil daftar Top Traders / Whale untuk sebuah mint koin tertentu
  */
-export const GET: APIRoute = async ({ params }) => {
+export const GET: APIRoute = async ({ params, request }) => {
   const { mint } = params;
+  const url = new URL(request.url);
+  const chain = url.searchParams.get('chain') || 'solana';
 
   if (!mint || typeof mint !== 'string') {
     return new Response(
@@ -19,7 +21,7 @@ export const GET: APIRoute = async ({ params }) => {
   }
 
   try {
-    const traders = await getTopTraders(mint);
+    const traders = await getTopTraders(mint, chain);
 
     return new Response(
       JSON.stringify({

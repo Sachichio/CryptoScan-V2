@@ -25,6 +25,7 @@ export async function getTrendingMints(): Promise<string[]> {
   try {
     const res = await fetch(`${RUGCHECK_BASE}/v1/stats/trending`, {
       headers: { Accept: 'application/json' },
+      signal: AbortSignal.timeout(2500),
     });
 
     if (!res.ok) {
@@ -59,6 +60,7 @@ async function getRecentMintsFallback(): Promise<string[]> {
   try {
     const res = await fetch(`${RUGCHECK_BASE}/v1/stats/recent?window=24h&limit=15`, {
       headers: { Accept: 'application/json' },
+      signal: AbortSignal.timeout(2500),
     });
     if (!res.ok) return getDefaultMints();
     const data = await res.json();
@@ -99,6 +101,7 @@ export async function getTokenSecurity(mint: string): Promise<TokenSecurity> {
   try {
     const res = await fetch(`${RUGCHECK_BASE}/v1/tokens/${mint}/report/summary`, {
       headers: { Accept: 'application/json' },
+      signal: AbortSignal.timeout(2500),
     });
 
     if (!res.ok) {
@@ -207,3 +210,33 @@ function getFallbackSecurity(mint: string): TokenSecurity {
     rugcheckScore: 200,
   };
 }
+
+/**
+ * Mengambil daftar holder asli (top holders) dari RugCheck
+ * Mengembalikan array holder dengan address/owner nyata di blockchain Solana
+ */
+export async function getSolanaTopHolders(mint: string): Promise<any[]> {
+  try {
+    const res = await fetch(`${RUGCHECK_BASE}/v1/tokens/${mint}/report`, {
+      headers: { Accept: 'application/json' },
+    });
+    if (!res.ok) {
+      // Coba fallback ke report/summary
+      const summaryRes = await fetch(`${RUGCHECK_BASE}/v1/tokens/${mint}/report/summary`, {
+        headers: { Accept: 'application/json' },
+      });
+      if (!summaryRes.ok) return [];
+      const summaryData = await summaryRes.json();
+      return Array.isArray(summaryData.topHolders) ? summaryData.topHolders : [];
+    }
+    const report = await res.json();
+    if (Array.isArray(report.topHolders)) {
+      return report.topHolders;
+    }
+    return [];
+  } catch (err) {
+    console.warn(`Gagal mengambil top holders RugCheck untuk ${mint}:`, err);
+    return [];
+  }
+}
+

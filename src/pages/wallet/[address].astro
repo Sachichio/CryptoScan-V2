@@ -3,78 +3,113 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import WalletHeader from '../../components/WalletHeader';
 import TokenList from '../../components/TokenList';
 import TransactionList from '../../components/TransactionList';
-import SearchBar from '../../components/SearchBar';
-import { getWalletInfo, isValidSolanaAddress } from '../../lib/solana';
-import type { WalletInfo } from '../../types/index';
-
-export const prerender = false; // Render secara dinamis di server saat halaman diakses
+import type { WalletInfo, WalletTokens } from '../../types/index';
 
 const { address } = Astro.params;
+const forcedChain = Astro.url.searchParams.get('chain') || '';
 
-let walletData: WalletInfo | null = null;
+let walletInfo: WalletInfo | null = null;
+let walletTokens: WalletTokens | null = null;
 let errorMessage: string | null = null;
 
-if (!address || !isValidSolanaAddress(address)) {
-  errorMessage = 'Alamat wallet Solana tidak valid. Pastikan alamat merupakan Public Key Solana yang benar.';
+if (!address) {
+  errorMessage = 'Alamat dompet tidak ditemukan pada URL';
 } else {
   try {
-    walletData = await getWalletInfo(address);
+    const host = Astro.url.origin;
+    const query = forcedChain ? `?chain=${forcedChain}` : '';
+
+    // Gunakan timeout 6 detik untuk mencegah halaman SSR macet selamanya
+    const [infoRes, tokensRes] = await Promise.all([
+      fetch(`${host}/api/wallet/${address}${query}`, { signal: AbortSignal.timeout(6000) }).catch((e) => {
+        console.warn('SSR wallet info timeout / error:', e);
+        return null;
+      }),
+      fetch(`${host}/api/tokens/${address}${query}`, { signal: AbortSignal.timeout(6000) }).catch((e) => {
+        console.warn('SSR wallet tokens timeout / error:', e);
+        return null;
+      }),
+    ]);
+
+    if (!infoRes || !infoRes.ok) {
+      const errData = infoRes ? await infoRes.json().catch(() => ({})) : {};
+      errorMessage = errData.error || (infoRes ? `Gagal mengambil info wallet (Status: ${infoRes.status})` : 'Koneksi ke node blockchain melebihi batas waktu (timeout 6 detik). Silakan coba refresh kembali.');
+    } else {
+      walletInfo = await infoRes.json();
+    }
+
+    if (tokensRes && tokensRes.ok) {
+      walletTokens = await tokensRes.json();
+    }
   } catch (err: any) {
-    console.error('Gagal me-render data wallet:', err);
-    errorMessage = err?.message || 'Terjadi kendala saat mengambil data wallet dari jaringan Solana.';
+    errorMessage = 'Terjadi kesalahan saat menghubungi server API';
+    console.error('Error SSR Wallet:', err);
   }
 }
 ---
 
-<BaseLayout title={walletData ? `Wallet ${address ? address.slice(0, 6) : ''}... | CryptoScan` : 'Wallet Not Found | CryptoScan'}>
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-    
-    {/* Navigation & Mini Search Bar */}
-    <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
+<BaseLayout title={walletInfo ? `Profil ${walletInfo.nativeSymbol}: ${address}` : 'CryptoScan — Wallet Dashboard'}>
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+    {/* Tombol Navigasi Kembali */}
+    <div class="mb-6 flex items-center justify-between">
       <a
         href="/"
-        class="inline-flex items-center gap-2 text-xs font-mono text-slate-400 hover:text-emerald-400 transition py-1"
+        class="inline-flex items-center gap-2 text-xs font-mono text-slate-400 hover:text-emerald-400 transition"
       >
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-        </svg>
-        <span>Kembali ke Pencarian</span>
+        <span>←</span>
+        <span>Cari Wallet Lain</span>
       </a>
 
-      <div class="sm:w-80">
-        <SearchBar client:load initialValue="" placeholder="Cari wallet lain..." />
-      </div>
+      {walletInfo && (
+        <span class="text-xs font-mono text-slate-500">
+          Jaringan: <strong class="text-slate-300 uppercase">{walletInfo.chain}</strong> ({walletInfo.nativeSymbol})
+        </span>
+      )}
     </div>
 
-    {/* Error Handling State */}
-    {errorMessage ? (
-      <div class="bg-rose-950/20 border border-rose-800/40 rounded-2xl p-8 text-center max-w-xl mx-auto my-12">
-        <div class="w-12 h-12 rounded-full bg-rose-500/10 text-rose-400 mx-auto flex items-center justify-center mb-4">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-          </svg>
+    {/* Pesan Error Jika Wallet Invalid */}
+    {errorMessage && (
+      <div class="p-6 bg-rose-500/10 border border-rose-500/30 rounded-2xl text-center">
+        <div class="w-12 h-12 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center mx-auto mb-3 text-xl">
+          ⚠️
         </div>
-        <h2 class="text-lg font-bold text-slate-100 mb-2">Gagal Memuat Wallet</h2>
-        <p class="text-sm text-rose-300 font-mono mb-6">{errorMessage}</p>
+        <h3 class="text-lg font-bold text-rose-300 mb-1">Gagal Memuat Wallet</h3>
+        <p class="text-sm font-mono text-rose-400/80 mb-4">{errorMessage}</p>
         <a
           href="/"
-          class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-semibold transition"
+          class="inline-block px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-mono rounded-xl transition"
         >
-          Coba Alamat Lain
+          Kembali ke Beranda
         </a>
       </div>
-    ) : walletData && (
-      <>
-        {/* 1. Wallet Header: Saldo SOL & USD */}
-        <WalletHeader client:load wallet={walletData} />
-
-        {/* 2. Token SPL Portfolio */}
-        <TokenList client:load address={address!} />
-
-        {/* 3. Recent Transactions */}
-        <TransactionList client:load transactions={walletData.recentTransactions} address={address!} />
-      </>
     )}
 
+    {/* Tampilan Dashboard Profiler */}
+    {walletInfo && (
+      <div class="space-y-8 animate-fade-in">
+        <WalletHeader client:load wallet={walletInfo} />
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div class="lg:col-span-2">
+            <TokenList
+              client:load
+              tokens={walletTokens?.tokens || []}
+              totalValueUSD={walletTokens?.totalValueUSD || 0}
+              chain={walletInfo.chain}
+            />
+          </div>
+
+          <div>
+            <TransactionList
+              client:load
+              transactions={walletInfo.recentTransactions || []}
+              address={walletInfo.address}
+              chain={walletInfo.chain}
+              nativeSymbol={walletInfo.nativeSymbol}
+            />
+          </div>
+        </div>
+      </div>
+    )}
   </div>
 </BaseLayout>

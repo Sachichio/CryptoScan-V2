@@ -1,13 +1,30 @@
 import React from 'react';
-import type { Transaction } from '../types/index';
+import type { Transaction, ChainId } from '../types/index';
 import { formatRelativeTime, shortenAddress } from '../lib/utils';
+import { CHAINS_CONFIG } from '../lib/chains/index';
 
 interface TransactionListProps {
   transactions: Transaction[];
   address: string;
+  chain?: ChainId;
+  nativeSymbol?: string;
 }
 
-export default function TransactionList({ transactions, address }: TransactionListProps) {
+export default function TransactionList({
+  transactions,
+  address,
+  chain = 'solana',
+  nativeSymbol = 'SOL',
+}: TransactionListProps) {
+  const chainMeta = CHAINS_CONFIG[chain] || CHAINS_CONFIG.solana;
+  const explorerBase = chainMeta.explorerUrl || 'https://solscan.io';
+  const explorerDomain = explorerBase.replace(/^https?:\/\//, '');
+
+  const accountUrl =
+    chain === 'solana'
+      ? `${explorerBase}/account/${address}#transfers`
+      : `${explorerBase}/address/${address}`;
+
   return (
     <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-xl backdrop-blur-md">
       <div className="flex items-center justify-between mb-6">
@@ -19,17 +36,17 @@ export default function TransactionList({ transactions, address }: TransactionLi
             <span>Riwayat Transaksi Terkini</span>
           </h2>
           <p className="text-xs text-slate-400 mt-1">
-            10 aktivitas transaksi terakhir yang dikonfirmasi di blockchain Solana.
+            10 aktivitas transaksi terakhir yang dikonfirmasi di blockchain {chainMeta.name}.
           </p>
         </div>
 
         <a
-          href={`https://solscan.io/account/${address}#transfers`}
+          href={accountUrl}
           target="_blank"
           rel="noreferrer"
           className="text-xs text-teal-400 hover:text-teal-300 transition flex items-center gap-1 font-mono"
         >
-          <span>Lihat Semua di Solscan</span>
+          <span>Lihat di {explorerDomain}</span>
           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
           </svg>
@@ -49,7 +66,7 @@ export default function TransactionList({ transactions, address }: TransactionLi
                 <th className="py-3 px-4">Jenis Aktivitas</th>
                 <th className="py-3 px-4">Waktu Transaksi</th>
                 <th className="py-3 px-4 text-center">Status</th>
-                <th className="py-3 px-4 text-right">Biaya Gas (SOL)</th>
+                <th className="py-3 px-4 text-right">Biaya Gas ({nativeSymbol})</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/50 text-sm font-mono">
@@ -57,7 +74,7 @@ export default function TransactionList({ transactions, address }: TransactionLi
                 <tr key={tx.signature} className="hover:bg-slate-800/30 transition-colors">
                   <td className="py-3 px-4 text-xs text-slate-300">
                     <a
-                      href={`https://solscan.io/tx/${tx.signature}`}
+                      href={`${explorerBase}/tx/${tx.signature}`}
                       target="_blank"
                       rel="noreferrer"
                       className="text-teal-400 hover:underline decoration-teal-500/50 flex items-center gap-1.5"
@@ -91,7 +108,7 @@ export default function TransactionList({ transactions, address }: TransactionLi
                     )}
                   </td>
                   <td className="py-3 px-4 text-right text-xs text-slate-400">
-                    {tx.fee} SOL
+                    {tx.fee} {nativeSymbol}
                   </td>
                 </tr>
               ))}

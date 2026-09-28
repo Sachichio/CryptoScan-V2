@@ -1,0 +1,64 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg: #0e1012;
+  --color-surface: #14171a;
+  --color-surface-2: #191d21;
+  --color-surface-3: #20252a;
+  --color-line: rgba(255, 255, 255, 0.06);
+  --color-line-strong: rgba(255, 255, 255, 0.11);
+
+  --color-brand: #5fb98e;
+  --color-brand-600: #52a880;
+  --color-brand-700: #438f6b;
+  --color-brand-soft: #9fd6bb;
+
+  --color-ink: #eceef0;
+  --color-muted: #8e969e;
+  --color-down: #e0787a;
+
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: "cv11", "ss01";
+}
+
+::selection {
+  background: rgba(95, 185, 142, 0.28);
+}
+
+.hero-bg {
+  background: radial-gradient(60% 45% at 50% -5%, rgba(95, 185, 142, 0.1), transparent 70%),
+    radial-gradient(40% 30% at 85% 10%, rgba(120, 140, 160, 0.06), transparent 70%);
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-fade-up {
+  animation: fade-up 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-none {
+  scrollbar-width: none;
+}

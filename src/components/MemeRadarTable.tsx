@@ -101,66 +101,39 @@ export default function MemeRadarTable({ initialCoins }: MemeRadarTableProps) {
       {/* Kontrol Utama: Pemilih Chain (Multi-Chain Tabs) */}
       <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 mb-6">
         {/* Tabs Jaringan */}
-        <div className="inline-flex p-1 bg-slate-900 border border-slate-800 rounded-2xl">
-          <button
-            onClick={() => handleChainChange('solana')}
-            className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-mono font-semibold transition cursor-pointer ${
-              activeChain === 'solana'
-                ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shadow-sm'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
-            }`}
-          >
-            <span>◎</span>
-            <span>Solana</span>
-          </button>
-
-          <button
-            onClick={() => handleChainChange('ethereum')}
-            className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-mono font-semibold transition cursor-pointer ${
-              activeChain === 'ethereum'
-                ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/40 shadow-sm'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
-            }`}
-          >
-            <span>⟠</span>
-            <span>Ethereum</span>
-          </button>
-
-          <button
-            onClick={() => handleChainChange('bsc')}
-            className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-mono font-semibold transition cursor-pointer ${
-              activeChain === 'bsc'
-                ? 'bg-amber-500/20 text-amber-400 border border-amber-500/40 shadow-sm'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
-            }`}
-          >
-            <span>⬡</span>
-            <span>BNB Chain</span>
-          </button>
-
-          <button
-            onClick={() => handleChainChange('base')}
-            className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-mono font-semibold transition cursor-pointer ${
-              activeChain === 'base'
-                ? 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/40 shadow-sm'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
-            }`}
-          >
-            <span>🔷</span>
-            <span>Base</span>
-          </button>
-
-          <button
-            onClick={() => handleChainChange('arbitrum')}
-            className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-mono font-semibold transition cursor-pointer ${
-              activeChain === 'arbitrum'
-                ? 'bg-blue-500/20 text-blue-400 border border-blue-500/40 shadow-sm'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
-            }`}
-          >
-            <span>🔵</span>
-            <span>Arbitrum</span>
-          </button>
+        <div className="inline-flex p-1 bg-surface-2 border border-line rounded-2xl">
+          {[
+            { id: 'solana', name: 'Solana', icon: '◎', color: '#14F195' },
+            { id: 'ethereum', name: 'Ethereum', icon: '⟠', color: '#8fa2e0' },
+            { id: 'bsc', name: 'BNB Chain', icon: '⬡', color: '#d9b25a' },
+            { id: 'base', name: 'Base', icon: '🔷', color: '#6b93e8' },
+            { id: 'arbitrum', name: 'Arbitrum', icon: '🔵', color: '#6aaed8' },
+          ].map((c) => {
+            const active = activeChain === c.id;
+            return (
+              <button
+                key={c.id}
+                onClick={() => handleChainChange(c.id as any)}
+                className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-mono font-medium transition cursor-pointer ${
+                  active
+                    ? 'bg-surface-3 text-ink shadow-sm'
+                    : 'text-muted hover:bg-white/[0.04] hover:text-ink'
+                }`}
+                style={
+                  active
+                    ? {
+                        color: c.color,
+                        boxShadow: `0 0 12px ${c.color}20`,
+                        border: `1px solid ${c.color}35`,
+                      }
+                    : { border: '1px solid transparent' }
+                }
+              >
+                <span>{c.icon}</span>
+                <span>{c.name}</span>
+              </button>
+            );
+          })}
         </div>
 
         {/* Filter Input & Status */}
@@ -177,12 +150,12 @@ export default function MemeRadarTable({ initialCoins }: MemeRadarTableProps) {
                   executeLiveSearch();
                 }
               }}
-              className="px-3.5 py-2 pr-8 bg-slate-900 border border-slate-800 rounded-xl text-xs font-mono text-slate-200 placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition w-full sm:w-64"
+              className="px-3.5 py-2 pr-8 bg-surface-2 border border-line rounded-xl text-xs font-mono text-ink placeholder:text-muted/60 focus:outline-none focus:border-brand/40 transition w-full sm:w-64"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="absolute right-2.5 text-slate-500 hover:text-slate-300 text-xs"
+                className="absolute right-2.5 text-muted hover:text-ink text-xs"
                 title="Hapus ketikan"
               >
                 ✕
@@ -193,7 +166,7 @@ export default function MemeRadarTable({ initialCoins }: MemeRadarTableProps) {
           <button
             onClick={executeLiveSearch}
             disabled={loading || searchQuery.trim().length < 2}
-            className="px-3 py-2 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 border border-emerald-500/40 text-xs font-mono font-semibold transition flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+            className="px-3 py-2 rounded-xl bg-brand/15 hover:bg-brand/25 text-brand border border-brand/30 text-xs font-mono font-semibold transition flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
             title="Cari di DexScreener"
           >
             <span>🔍</span>
@@ -203,7 +176,7 @@ export default function MemeRadarTable({ initialCoins }: MemeRadarTableProps) {
           {isLiveSearch && (
             <button
               onClick={handleResetTrending}
-              className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-xs font-mono transition flex items-center gap-1 cursor-pointer"
+              className="px-3 py-2 rounded-xl bg-surface-3 hover:bg-surface text-ink border border-line text-xs font-mono transition flex items-center gap-1 cursor-pointer"
               title="Kembali ke koin Trending"
             >
               <span>✕</span>
@@ -215,8 +188,8 @@ export default function MemeRadarTable({ initialCoins }: MemeRadarTableProps) {
             onClick={() => setFilterScore(filterScore === 'all' ? 'safe' : 'all')}
             className={`px-3 py-2 rounded-xl border text-xs font-mono transition flex items-center gap-1 whitespace-nowrap cursor-pointer ${
               filterScore === 'safe'
-                ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40 font-semibold'
-                : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-slate-200'
+                ? 'bg-brand/15 text-brand border-brand/40 font-semibold'
+                : 'bg-surface-2 text-muted border-line hover:text-ink'
             }`}
           >
             <span>🛡️</span>
@@ -242,11 +215,11 @@ export default function MemeRadarTable({ initialCoins }: MemeRadarTableProps) {
       )}
 
       {/* Tabel Koin Meme */}
-      <div className="bg-slate-900/60 border border-slate-800/80 rounded-2xl overflow-hidden backdrop-blur-sm shadow-xl">
+      <div className="bg-surface/70 border border-line rounded-2xl overflow-hidden backdrop-blur-sm shadow-xl">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-slate-800 bg-slate-950/40 text-[11px] font-mono text-slate-400 uppercase tracking-wider">
+              <tr className="border-b border-line bg-surface-2/60 text-[11px] font-mono text-muted uppercase tracking-wider">
                 <th className="py-3.5 pl-4 sm:pl-6"># Token</th>
                 <th className="py-3.5 text-center">Jaringan</th>
                 <th className="py-3.5 text-right">Harga</th>
@@ -256,26 +229,26 @@ export default function MemeRadarTable({ initialCoins }: MemeRadarTableProps) {
                 <th className="py-3.5 pr-4 sm:pr-6 text-right">Whale Intel</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/50 text-xs font-mono">
+            <tbody className="divide-y divide-line text-xs font-mono">
               {loading ? (
                 <tr>
-                  <td colSpan={7} className="py-16 text-center text-slate-400">
-                    <div className="inline-block w-6 h-6 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin mb-2"></div>
+                  <td colSpan={7} className="py-16 text-center text-muted">
+                    <div className="inline-block w-6 h-6 border-2 border-brand border-t-transparent rounded-full animate-spin mb-2"></div>
                     <div>{searchStatusText || `Memindai data Meme Radar (${activeChain.toUpperCase()})...`}</div>
                   </td>
                 </tr>
               ) : filteredCoins.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-16 text-center text-slate-400">
-                    <div className="w-12 h-12 rounded-full bg-slate-800/80 border border-slate-700 flex items-center justify-center mx-auto mb-3 text-xl">
+                  <td colSpan={7} className="py-16 text-center text-muted">
+                    <div className="w-12 h-12 rounded-full bg-surface-2 border border-line flex items-center justify-center mx-auto mb-3 text-xl">
                       🔍
                     </div>
-                    <div className="font-semibold text-slate-300 mb-1">
+                    <div className="font-semibold text-ink mb-1">
                       {isLiveSearch
                         ? `Token tidak ditemukan di DexScreener (${activeChain.toUpperCase()})`
                         : `Tidak ada token yang cocok di jaringan ${activeChain.toUpperCase()}`}
                     </div>
-                    <p className="text-xs text-slate-500 max-w-md mx-auto mb-4 font-sans">
+                    <p className="text-xs text-muted max-w-md mx-auto mb-4 font-sans">
                       {isLiveSearch
                         ? 'Pastikan nama atau alamat kontrak (CA) yang Anda masukkan sudah benar dan terdaftar pada jaringan ini.'
                         : 'Coba tekan tombol 🔍 Cari untuk mencari langsung ke seluruh database DexScreener.'}
@@ -283,7 +256,7 @@ export default function MemeRadarTable({ initialCoins }: MemeRadarTableProps) {
                     {isLiveSearch && (
                       <button
                         onClick={handleResetTrending}
-                        className="px-3.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-mono transition"
+                        className="px-3.5 py-1.5 rounded-lg bg-surface-2 hover:bg-surface-3 text-ink text-xs font-mono transition"
                       >
                         ← Tampilkan Kembali Koin Trending
                       </button>
@@ -292,13 +265,13 @@ export default function MemeRadarTable({ initialCoins }: MemeRadarTableProps) {
                 </tr>
               ) : (
                 filteredCoins.map((coin, index) => (
-                  <tr key={`${coin.chain}-${coin.mint}`} className="hover:bg-slate-800/40 transition group">
+                  <tr key={`${coin.chain}-${coin.mint}`} className="hover:bg-white/[0.02] transition group">
                     <td className="py-4 pl-4 sm:pl-6">
                       <div className="flex items-center gap-3">
-                        <span className="text-slate-500 text-[11px] w-4 text-right">
+                        <span className="text-muted text-[11px] w-4 text-right">
                           {index + 1}
                         </span>
-                        <div className="w-8 h-8 rounded-full bg-slate-800 border border-slate-700/60 flex items-center justify-center overflow-hidden flex-shrink-0">
+                        <div className="w-8 h-8 rounded-full bg-surface-2 border border-line flex items-center justify-center overflow-hidden flex-shrink-0">
                           {coin.logoURI ? (
                             <img
                               src={coin.logoURI}
@@ -309,19 +282,19 @@ export default function MemeRadarTable({ initialCoins }: MemeRadarTableProps) {
                               }}
                             />
                           ) : (
-                            <span className="text-xs font-bold text-slate-400">
+                            <span className="text-xs font-bold text-muted">
                               {coin.symbol.slice(0, 2)}
                             </span>
                           )}
                         </div>
                         <div>
-                          <div className="font-bold text-slate-100 group-hover:text-emerald-400 transition flex items-center gap-1.5">
+                          <div className="font-bold text-ink group-hover:text-brand transition flex items-center gap-1.5">
                             <span>{coin.name}</span>
-                            <span className="text-[10px] px-1.5 py-0.2 rounded bg-slate-800 text-slate-400 font-normal">
+                            <span className="text-[10px] px-1.5 py-0.2 rounded bg-surface-2 text-muted font-normal border border-line">
                               {coin.symbol}
                             </span>
                           </div>
-                          <p className="text-[10px] text-slate-500 truncate max-w-[120px] sm:max-w-[180px]">
+                          <p className="text-[10px] text-muted truncate max-w-[120px] sm:max-w-[180px]">
                             {coin.mint}
                           </p>
                         </div>
@@ -332,14 +305,14 @@ export default function MemeRadarTable({ initialCoins }: MemeRadarTableProps) {
                       <ChainBadge chain={coin.chain || activeChain} />
                     </td>
 
-                    <td className="py-4 text-right font-semibold text-slate-200">
+                    <td className="py-4 text-right font-semibold text-ink">
                       ${coin.priceUSD < 0.01 ? coin.priceUSD.toFixed(7) : coin.priceUSD.toFixed(4)}
                     </td>
 
                     <td className="py-4 text-right">
                       <span
                         className={`inline-flex items-center font-bold ${
-                          coin.priceChange24h >= 0 ? 'text-emerald-400' : 'text-rose-400'
+                          coin.priceChange24h >= 0 ? 'text-brand' : 'text-down'
                         }`}
                       >
                         {coin.priceChange24h >= 0 ? '+' : ''}
@@ -347,7 +320,7 @@ export default function MemeRadarTable({ initialCoins }: MemeRadarTableProps) {
                       </span>
                     </td>
 
-                    <td className="py-4 text-right hidden md:table-cell text-slate-300">
+                    <td className="py-4 text-right hidden md:table-cell text-muted">
                       {formatUSD(coin.volume24hUSD)}
                     </td>
 
@@ -365,7 +338,7 @@ export default function MemeRadarTable({ initialCoins }: MemeRadarTableProps) {
                             chain: coin.chain,
                           })
                         }
-                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 transition text-xs font-semibold"
+                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-brand/10 hover:bg-brand/20 text-brand border border-brand/25 transition text-xs font-semibold cursor-pointer"
                       >
                         <span>🐋 Whales</span>
                       </button>

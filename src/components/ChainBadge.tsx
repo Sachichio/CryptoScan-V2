@@ -13,20 +13,25 @@ interface ChainBadgeProps {
 export default function ChainBadge({ chain, size = 'sm' }: ChainBadgeProps) {
   const config = CHAINS_CONFIG[chain] || CHAINS_CONFIG.solana;
 
-  const colorStyles: Record<ChainId, string> = {
-    solana: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
-    ethereum: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/30',
-    bsc: 'bg-amber-500/10 text-amber-400 border-amber-500/30',
-    base: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/30',
-    arbitrum: 'bg-blue-500/10 text-blue-400 border-blue-500/30',
+  const chainColors: Record<ChainId, { color: string; bg: string; border: string }> = {
+    solana: { color: '#14F195', bg: 'rgba(20, 241, 149, 0.1)', border: 'rgba(20, 241, 149, 0.25)' },
+    ethereum: { color: '#8fa2e0', bg: 'rgba(143, 162, 224, 0.1)', border: 'rgba(143, 162, 224, 0.25)' },
+    bsc: { color: '#d9b25a', bg: 'rgba(217, 178, 90, 0.1)', border: 'rgba(217, 178, 90, 0.25)' },
+    base: { color: '#6b93e8', bg: 'rgba(107, 147, 232, 0.1)', border: 'rgba(107, 147, 232, 0.25)' },
+    arbitrum: { color: '#6aaed8', bg: 'rgba(106, 174, 216, 0.1)', border: 'rgba(106, 174, 216, 0.25)' },
   };
 
-  const style = colorStyles[chain];
+  const scheme = chainColors[chain] || chainColors.solana;
   const padding = size === 'sm' ? 'px-2 py-0.5 text-[10px]' : 'px-2.5 py-1 text-xs';
 
   return (
     <span
-      className={`inline-flex items-center gap-1 rounded-md border font-mono font-semibold ${style} ${padding}`}
+      className={`inline-flex items-center gap-1 rounded-md border font-mono font-semibold ${padding}`}
+      style={{
+        color: scheme.color,
+        backgroundColor: scheme.bg,
+        borderColor: scheme.border,
+      }}
       title={`Jaringan ${config.name}`}
     >
       <span>{config.logoChar}</span>

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import type { ChainId } from '../types/index';
 import { detectChain, CHAINS_CONFIG } from '../lib/chains/index';
-import ChainBadge from './ChainBadge';
+import { ArrowRight } from './Icons';
 
 type ChainFilter = 'auto' | ChainId;
 
@@ -29,7 +29,6 @@ export default function SearchBar() {
       return;
     }
 
-    // Validasi kompatibilitas format alamat jika user memilih chain tertentu
     if (selectedChain === 'solana' && cleanAddress.startsWith('0x')) {
       setError('Alamat EVM (0x...) tidak kompatibel dengan jaringan Solana.');
       return;
@@ -42,7 +41,6 @@ export default function SearchBar() {
     setError('');
     setIsSubmitting(true);
 
-    // Navigasi ke rute wallet profil dengan parameter chain jika dipilih secara eksplisit
     let targetUrl = `/wallet/${cleanAddress}`;
     if (selectedChain !== 'auto') {
       targetUrl += `?chain=${selectedChain}`;
@@ -50,41 +48,69 @@ export default function SearchBar() {
     window.location.href = targetUrl;
   };
 
-  const chainButtons: { id: ChainFilter; label: string; icon: string; activeClass: string }[] = [
-    { id: 'auto', label: 'Auto Detect', icon: '⚡', activeClass: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40 shadow-sm' },
-    { id: 'solana', label: 'SOL', icon: '◎', activeClass: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40 shadow-sm' },
-    { id: 'ethereum', label: 'ETH', icon: '⟠', activeClass: 'bg-cyan-500/20 text-cyan-400 border-cyan-500/40 shadow-sm' },
-    { id: 'bsc', label: 'BNB', icon: '⬡', activeClass: 'bg-amber-500/20 text-amber-400 border-amber-500/40 shadow-sm' },
-    { id: 'base', label: 'BASE', icon: '🔷', activeClass: 'bg-indigo-500/20 text-indigo-400 border-indigo-500/40 shadow-sm' },
-    { id: 'arbitrum', label: 'ARB', icon: '🔵', activeClass: 'bg-blue-500/20 text-blue-400 border-blue-500/40 shadow-sm' },
+  const chainButtons: { id: ChainFilter; label: string; icon: string }[] = [
+    { id: 'auto', label: 'Otomatis', icon: '⚡' },
+    { id: 'solana', label: 'Solana', icon: '◎' },
+    { id: 'ethereum', label: 'Ethereum', icon: '⟠' },
+    { id: 'bsc', label: 'BNB Chain', icon: '⬡' },
+    { id: 'base', label: 'Base', icon: '🔷' },
+    { id: 'arbitrum', label: 'Arbitrum', icon: '🔵' },
   ];
 
   return (
-    <div className="w-full max-w-2xl mx-auto">
-      {/* Chain Selector Pills */}
-      <div className="flex items-center justify-center gap-1.5 mb-3 flex-wrap">
-        {chainButtons.map((btn) => (
-          <button
-            key={btn.id}
-            type="button"
-            onClick={() => {
-              setSelectedChain(btn.id);
-              if (error) setError('');
-            }}
-            className={`px-3 py-1.5 rounded-xl text-xs font-mono font-medium transition cursor-pointer flex items-center gap-1.5 border ${
-              selectedChain === btn.id
-                ? btn.activeClass
-                : 'bg-slate-900/60 hover:bg-slate-850 text-slate-400 border-slate-800 hover:text-slate-200'
-            }`}
-          >
-            <span>{btn.icon}</span>
-            <span>{btn.label}</span>
-          </button>
-        ))}
-      </div>
+    <div className="w-full">
+      <div className="mx-auto max-w-2xl rounded-3xl border border-line bg-surface/70 p-2.5 text-left shadow-[0_20px_60px_-20px_rgba(0,0,0,0.6)]">
+        
+        {/* chain selector */}
+        <div className="scrollbar-none flex items-center gap-1 overflow-x-auto px-1 pb-2.5 pt-0.5">
+          {chainButtons.map((btn) => {
+            const active = selectedChain === btn.id;
+            return (
+              <button
+                key={btn.id}
+                type="button"
+                onClick={() => {
+                  setSelectedChain(btn.id);
+                  if (error) setError('');
+                }}
+                className={`inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors focus:outline-none ${
+                  active
+                    ? "bg-surface-3 text-ink font-semibold"
+                    : "text-muted hover:bg-white/[0.04] hover:text-ink"
+                }`}
+              >
+                {btn.icon !== '⚡' && (
+                  <span
+                    className="inline-block shrink-0 rounded-full"
+                    style={{
+                      width: 7,
+                      height: 7,
+                      background: 
+                        btn.id === 'solana' ? '#a58be0' :
+                        btn.id === 'ethereum' ? '#8fa2e0' :
+                        btn.id === 'bsc' ? '#d9b25a' :
+                        btn.id === 'base' ? '#6b93e8' :
+                        '#6aaed8'
+                    }}
+                  />
+                )}
+                {btn.label}
+              </button>
+            );
+          })}
+        </div>
 
-      <form onSubmit={handleSearch} className="relative group">
-        <div className="relative flex items-center">
+        <form
+          onSubmit={handleSearch}
+          className={`group flex items-center gap-2 rounded-2xl border bg-bg/60 p-1.5 pl-4 transition-colors focus-within:border-brand/40 ${
+            error ? "border-down/40" : "border-line"
+          }`}
+        >
+          {/* Magnifying Glass Icon */}
+          <svg width={18} height={18} fill="none" viewBox="0 0 24 24" className="shrink-0 text-muted transition-colors group-focus-within:text-brand">
+            <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16ZM21 21l-4.35-4.35"></path>
+          </svg>
+
           <input
             type="text"
             value={address}
@@ -94,53 +120,65 @@ export default function SearchBar() {
             }}
             placeholder={
               selectedChain === 'solana'
-                ? "Masukkan alamat wallet Solana (Base58)..."
+                ? "Tempel alamat wallet Solana (Base58)..."
                 : selectedChain !== 'auto'
-                ? `Masukkan alamat wallet ${CHAINS_CONFIG[selectedChain]?.name} (0x...)...`
-                : "Masukkan alamat wallet SOL, ETH, BNB, BASE, ARB (0x...)..."
+                ? `Tempel alamat wallet ${CHAINS_CONFIG[selectedChain]?.name} (0x...)`
+                : "Tempel alamat wallet SOL atau EVM (0x…)"
             }
-            className="w-full pl-11 pr-32 py-3.5 bg-slate-900/90 hover:bg-slate-900 border border-slate-800 focus:border-emerald-500 rounded-2xl text-slate-100 placeholder-slate-500 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition shadow-lg"
+            spellCheck={false}
+            className="min-w-0 flex-1 bg-transparent py-3 text-[15px] text-ink placeholder:text-muted/60 focus:outline-none"
           />
 
-          {/* Ikon Pencarian Kiri */}
-          <div className="absolute left-4 text-slate-500">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-          </div>
-
-          {/* Badge Deteksi Jaringan Live & Tombol Submit */}
-          <div className="absolute right-2 flex items-center gap-2">
-            {(selectedChain !== 'auto' || detectedChain !== 'unknown') && (
-              <div className="hidden sm:flex items-center animate-fade-in">
-                <ChainBadge chain={selectedChain !== 'auto' ? selectedChain : (detectedChain as ChainId)} />
-              </div>
-            )}
-
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-semibold text-xs rounded-xl transition shadow-md shadow-emerald-500/20 flex items-center gap-1.5 disabled:opacity-50"
-            >
-              {isSubmitting ? (
-                <div className="w-4 h-4 border-2 border-slate-950 border-t-transparent rounded-full animate-spin"></div>
-              ) : (
-                <>
-                  <span>Scan</span>
-                  <span className="hidden sm:inline">→</span>
-                </>
+          {address && (
+            <>
+              {detectedChain !== 'unknown' && (
+                <span className="hidden sm:inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-0.5 text-[11px] font-medium"
+                  style={{
+                    color: CHAINS_CONFIG[detectedChain].color === 'emerald' ? '#5fb98e' : '#eceef0',
+                    background: 'rgba(255,255,255,0.06)'
+                  }}
+                >
+                  <span className="h-1.5 w-1.5 rounded-full" style={{ background: CHAINS_CONFIG[detectedChain].color === 'emerald' ? '#14F195' : '#627EEA' }} />
+                  {CHAINS_CONFIG[detectedChain].shortName}
+                </span>
               )}
-            </button>
-          </div>
-        </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setAddress('');
+                  setError('');
+                }}
+                className="rounded-full p-1.5 text-muted hover:bg-white/5 hover:text-ink focus:outline-none"
+                aria-label="Hapus"
+              >
+                <svg width={14} height={14} fill="none" viewBox="0 0 24 24"><path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18 6 6 18M6 6l12 12"></path></svg>
+              </button>
+            </>
+          )}
 
-        {/* Pesan Error */}
-        {error && (
-          <p className="absolute -bottom-6 left-2 text-xs text-rose-400 font-mono">
-            {error}
-          </p>
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="flex shrink-0 items-center gap-2 rounded-xl bg-brand px-5 py-3 text-sm font-semibold text-[#0b1a13] transition-colors hover:bg-brand-soft active:scale-[0.98] disabled:opacity-60"
+          >
+            {isSubmitting ? (
+              <span className="h-4 w-4 animate-spin rounded-full border-2 border-[#0b1a13]/25 border-t-[#0b1a13]" />
+            ) : (
+              <>
+                Scan <ArrowRight width={15} height={15} />
+              </>
+            )}
+          </button>
+        </form>
+      </div>
+
+      <div className="mx-auto mt-3 h-5 max-w-2xl px-3 text-left text-xs">
+        {error ? (
+          <span className="text-down">{error}</span>
+        ) : (
+          <span className="text-muted/70">Hanya membaca data publik — tidak perlu menghubungkan wallet.</span>
         )}
-      </form>
+      </div>
     </div>
   );
 }

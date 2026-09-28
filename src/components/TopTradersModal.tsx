@@ -60,29 +60,29 @@ export default function TopTradersModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fade-in">
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
+      <div className="bg-surface border border-line rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl">
         {/* Header Modal */}
-        <div className="p-5 border-b border-slate-800 flex items-center justify-between bg-slate-900/50">
+        <div className="p-5 border-b border-line flex items-center justify-between bg-surface-2/50">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 font-bold text-lg">
+            <div className="w-10 h-10 rounded-xl bg-brand/10 border border-brand/20 flex items-center justify-center text-brand font-bold text-lg">
               🐋
             </div>
             <div>
-              <h3 className="font-bold text-slate-100 text-base sm:text-lg flex items-center gap-2">
+              <h3 className="font-bold text-ink text-base sm:text-lg flex items-center gap-2">
                 Top Whale Traders
-                <span className="text-xs px-2 py-0.5 rounded-full bg-slate-800 text-emerald-400 font-mono">
+                <span className="text-xs px-2 py-0.5 rounded-full bg-surface-3 text-brand font-mono border border-line">
                   {tokenSymbol}
                 </span>
               </h3>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-muted">
                 Dompet-dompet paling cuan dan memiliki aktivitas besar di {tokenName}
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-200 p-2 rounded-lg hover:bg-slate-800 transition"
+            className="text-muted hover:text-ink p-2 rounded-lg hover:bg-white/[0.04] transition"
           >
             ✕
           </button>
@@ -91,30 +91,30 @@ export default function TopTradersModal({
         {/* Content Body */}
         <div className="p-5 max-h-[65vh] overflow-y-auto">
           {loading && (
-            <div className="py-12 text-center text-slate-400 text-sm font-mono flex flex-col items-center justify-center gap-2">
-              <div className="w-6 h-6 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+            <div className="py-12 text-center text-muted text-sm font-mono flex flex-col items-center justify-center gap-2">
+              <div className="w-6 h-6 border-2 border-brand border-t-transparent rounded-full animate-spin"></div>
               <span>Menganalisis transaksi whale on-chain...</span>
             </div>
           )}
 
           {error && (
-            <div className="p-4 bg-rose-500/10 border border-rose-500/30 text-rose-300 rounded-xl text-xs font-mono text-center">
+            <div className="p-4 bg-down/10 border border-down/30 text-down rounded-xl text-xs font-mono text-center">
               {error}
             </div>
           )}
 
           {!loading && !error && traders.length === 0 && (
             <div className="py-10 px-4 text-center flex flex-col items-center justify-center">
-              <div className="w-12 h-12 rounded-full bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 mb-3 text-xl">
+              <div className="w-12 h-12 rounded-full bg-[#d9b25a]/10 border border-[#d9b25a]/20 flex items-center justify-center text-[#d9b25a] mb-3 text-xl">
                 ⚠️
               </div>
-              <h4 className="text-sm font-bold text-slate-200 mb-1">
+              <h4 className="text-sm font-bold text-ink mb-1">
                 Data Whale Belum Tersedia di On-Chain
               </h4>
-              <p className="text-xs text-slate-400 max-w-sm mb-4 leading-relaxed">
+              <p className="text-xs text-muted max-w-sm mb-4 leading-relaxed">
                 Sistem tidak dapat menarik daftar pemegang terbesar untuk token ini secara langsung dari blockchain. Kemungkinan likuiditas token masih sangat baru atau indeks data pemegang sedang diperbarui.
               </p>
-              <div className="p-3 bg-slate-800/60 rounded-xl border border-slate-700/50 text-[11px] text-slate-300 font-mono">
+              <div className="p-3 bg-surface-2 rounded-xl border border-line text-[11px] text-muted font-mono">
                 Silakan pantau pergerakan transaksi token ini secara langsung di DexScreener atau Block Explorer.
               </div>
             </div>
@@ -124,28 +124,28 @@ export default function TopTradersModal({
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="border-b border-slate-800 text-[11px] font-mono text-slate-400 uppercase tracking-wider">
+                  <tr className="border-b border-line text-[11px] font-mono text-muted uppercase tracking-wider">
                     <th className="pb-3 pl-2">Alamat Wallet</th>
                     <th className="pb-3 text-right">Realized Profit</th>
                     <th className="pb-3 text-right">Total Beli</th>
                     <th className="pb-3 pr-2 text-right">Aksi</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-800/60 text-xs font-mono">
+                <tbody className="divide-y divide-line text-xs font-mono">
                   {traders.map((t, idx) => (
-                    <tr key={idx} className="hover:bg-slate-800/40 transition">
+                    <tr key={idx} className="hover:bg-white/[0.02] transition">
                       <td className="py-3.5 pl-2">
                         <div className="flex items-center gap-2">
-                          <span className="text-[10px] w-4 text-slate-500">#{idx + 1}</span>
-                          <span className="text-slate-200 font-semibold" title={t.wallet}>
+                          <span className="text-[10px] w-4 text-muted">#{idx + 1}</span>
+                          <span className="text-ink font-semibold" title={t.wallet}>
                             {shortenAddress(t.wallet, 4)}
                           </span>
                         </div>
                       </td>
-                      <td className="py-3.5 text-right font-semibold text-emerald-400">
+                      <td className="py-3.5 text-right font-semibold text-brand">
                         +{formatUSD(t.realizedPnlUSD)}
                       </td>
-                      <td className="py-3.5 text-right text-slate-400">
+                      <td className="py-3.5 text-right text-muted">
                         {formatUSD(t.totalBoughtUSD)}
                       </td>
                       <td className="py-3.5 pr-2 text-right">
@@ -157,7 +157,7 @@ export default function TopTradersModal({
                               href={stalkUrl}
                               target="_blank"
                               rel="noreferrer"
-                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 transition text-[11px] font-medium"
+                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-brand/10 hover:bg-brand/20 text-brand border border-brand/25 transition text-[11px] font-medium"
                             >
                               <span>Stalk Wallet</span>
                               <span>→</span>
@@ -174,11 +174,11 @@ export default function TopTradersModal({
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-slate-800 bg-slate-900/30 flex items-center justify-between text-xs text-slate-500 font-mono">
+        <div className="p-4 border-t border-line bg-surface-2/30 flex items-center justify-between text-xs text-muted font-mono">
           <span>Klik "Stalk Wallet" untuk membongkar portofolio lengkap whale.</span>
           <button
             onClick={onClose}
-            className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 transition"
+            className="px-3 py-1.5 rounded-lg bg-surface-2 hover:bg-surface-3 text-ink transition border border-line"
           >
             Tutup
           </button>
